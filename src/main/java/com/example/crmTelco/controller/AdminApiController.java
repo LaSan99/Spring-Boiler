@@ -1,0 +1,148 @@
+package com.example.crmTelco.controller;
+
+import com.example.crmTelco.entity.User;
+import com.example.crmTelco.entity.Package;
+import com.example.crmTelco.service.UserService;
+import com.example.crmTelco.service.PackageService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/admin")
+@PreAuthorize("hasRole('ADMIN')")
+public class AdminApiController {
+
+    private final UserService userService;
+    private final PackageService packageService;
+
+    public AdminApiController(UserService userService, PackageService packageService) {
+        this.userService = userService;
+        this.packageService = packageService;
+    }
+
+    @GetMapping("/dashboard")
+    public ResponseEntity<Map<String, Object>> getDashboardStats() {
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalUsers", userService.getTotalUsersCount());
+        stats.put("totalPackages", packageService.getTotalPackagesCount());
+        stats.put("activePackages", packageService.getActivePackagesCount());
+        return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<List<User>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    @GetMapping("/users/{id}")
+    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+        return userService.getUserById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/users")
+    public ResponseEntity<?> createUser(@RequestBody User user) {
+        try {
+            User createdUser = userService.createUser(user);
+            return ResponseEntity.ok(createdUser);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/users/{id}")
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody User userDetails) {
+        try {
+            User updatedUser = userService.updateUser(id, userDetails);
+            return ResponseEntity.ok(updatedUser);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/users/{id}/toggle-status")
+    public ResponseEntity<?> toggleUserStatus(@PathVariable Long id) {
+        try {
+            User user = userService.toggleUserStatus(id);
+            return ResponseEntity.ok("User status updated successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        try {
+            userService.deleteUser(id);
+            return ResponseEntity.ok("User deleted successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/packages")
+    public ResponseEntity<List<Package>> getAllPackages() {
+        return ResponseEntity.ok(packageService.getAllPackages());
+    }
+
+    @GetMapping("/packages/{id}")
+    public ResponseEntity<Package> getPackageById(@PathVariable Long id) {
+        return packageService.getPackageById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/packages")
+    public ResponseEntity<?> createPackage(@RequestBody Package packageEntity) {
+        try {
+            Package createdPackage = packageService.createPackage(packageEntity);
+            return ResponseEntity.ok(createdPackage);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/packages/{id}")
+    public ResponseEntity<?> updatePackage(@PathVariable Long id, @RequestBody Package packageDetails) {
+        try {
+            Package updatedPackage = packageService.updatePackage(id, packageDetails);
+            return ResponseEntity.ok(updatedPackage);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/packages/{id}/toggle-status")
+    public ResponseEntity<?> togglePackageStatus(@PathVariable Long id) {
+        try {
+            Package packageEntity = packageService.togglePackageStatus(id);
+            return ResponseEntity.ok("Package status updated successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/packages/{id}")
+    public ResponseEntity<?> deletePackage(@PathVariable Long id) {
+        try {
+            packageService.deletePackage(id);
+            return ResponseEntity.ok("Package deleted successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
+        return userService.getUserByUsername(authentication.getName())
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+}

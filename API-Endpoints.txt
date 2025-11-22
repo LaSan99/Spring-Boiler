@@ -1,0 +1,253 @@
+Telco CRM Admin API Endpoints
+================================
+
+Authentication:
+- URL: http://localhost:8080
+- Default Admin: admin / admin123
+
+API ENDPOINTS:
+
+1. Authentication
+
+   a) Login
+   POST /api/auth/login
+   Description: Authenticate user and return JWT token
+   Headers: Content-Type: application/json
+   Request Body:
+   {
+     "username": "admin",
+     "password": "admin123"
+   }
+   Response:
+   {
+     "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTYzNzU5MjQwMCwiZXhwIjoxNjM3Njc4ODAwfQ.signature",
+     "type": "Bearer",
+     "message": "Login successful",
+     "username": "admin",
+     "authorities": [{"authority": "ROLE_ADMIN"}]
+   }
+
+   b) Logout
+   POST /api/auth/logout
+   Description: Logout user and clear session
+   Headers: None required
+   Response:
+   {
+     "message": "Logout successful"
+   }
+
+   c) Check Auth Status
+   GET /api/auth/status
+   Description: Check if user is authenticated
+   Headers: None required
+   Response:
+   {
+     "authenticated": true,
+     "username": "admin",
+     "authorities": [{"authority": "ROLE_ADMIN"}]
+   }
+
+2. Dashboard
+   GET /api/admin/dashboard
+   Description: Get dashboard statistics (total users, packages, active packages)
+   Headers: Requires authentication
+   Response: JSON with dashboard stats
+
+3. User Management
+
+   a) Get All Users
+   GET /api/admin/users
+   Description: Retrieve all users in the system
+   Headers: Requires authentication
+   Response: Array of User objects
+
+   b) Get User by ID
+   GET /api/admin/users/{id}
+   Description: Retrieve a specific user by ID
+   Headers: Requires authentication
+   Path Parameters: id (Long)
+   Response: User object
+
+   c) Create User
+   POST /api/admin/users
+   Description: Create a new user in the system
+   Headers: Content-Type: application/json, Requires authentication
+   Request Body:
+   {
+     "username": "john_doe",
+     "password": "password123",
+     "email": "john@example.com",
+     "fullName": "John Doe",
+     "role": "USER"
+   }
+   Response: Created User object
+
+   d) Update User
+   PUT /api/admin/users/{id}
+   Description: Update an existing user
+   Headers: Content-Type: application/json, Requires authentication
+   Path Parameters: id (Long)
+   Request Body:
+   {
+     "username": "john_doe_updated",
+     "email": "john_updated@example.com",
+     "fullName": "John Doe Updated",
+     "role": "ADMIN",
+     "password": "newpassword123"
+   }
+   Response: Updated User object
+
+   e) Toggle User Status
+   PUT /api/admin/users/{id}/toggle-status
+   Description: Enable or disable a user account
+   Headers: Requires authentication
+   Path Parameters: id (Long)
+   Response: Success message
+
+   f) Delete User
+   DELETE /api/admin/users/{id}
+   Description: Delete a user from the system
+   Headers: Requires authentication
+   Path Parameters: id (Long)
+   Response: Success message
+
+4. Package Management
+
+   a) Get All Packages
+   GET /api/admin/packages
+   Description: Retrieve all packages in the system
+   Headers: Requires authentication
+   Response: Array of Package objects
+
+   b) Get Package by ID
+   GET /api/admin/packages/{id}
+   Description: Retrieve a specific package by ID
+   Headers: Requires authentication
+   Path Parameters: id (Long)
+   Response: Package object
+
+   c) Create Package
+   POST /api/admin/packages
+   Description: Create a new package
+   Headers: Content-Type: application/json, Requires authentication
+   Request Body:
+   {
+     "name": "Gold Package",
+     "description": "Premium package with unlimited features",
+     "price": 79.99,
+     "dataLimitGB": 100,
+     "voiceMinutes": 5000,
+     "smsCount": 1000
+   }
+   Response: Created Package object
+
+   d) Update Package
+   PUT /api/admin/packages/{id}
+   Description: Update an existing package
+   Headers: Content-Type: application/json, Requires authentication
+   Path Parameters: id (Long)
+   Request Body:
+   {
+     "name": "Gold Package Updated",
+     "description": "Updated premium package",
+     "price": 89.99,
+     "dataLimitGB": 150,
+     "voiceMinutes": 6000,
+     "smsCount": 1500
+   }
+   Response: Updated Package object
+
+   e) Toggle Package Status
+   PUT /api/admin/packages/{id}/toggle-status
+   Description: Enable or disable a package
+   Headers: Requires authentication
+   Path Parameters: id (Long)
+   Response: Success message
+
+   f) Delete Package
+   DELETE /api/admin/packages/{id}
+   Description: Delete a package from the system
+   Headers: Requires authentication
+   Path Parameters: id (Long)
+   Response: Success message
+
+5. Profile
+
+   a) Get Current User Profile
+   GET /api/admin/profile
+   Description: Get current authenticated user profile
+   Headers: Requires authentication
+   Response: Current User object
+
+6. Health Check
+
+   a) Database Health
+   GET /health/db
+   Description: Check database connectivity (no auth required)
+   Headers: None required
+   Response: Health status
+
+USAGE FLOW:
+1. First, login using POST /api/auth/login to get JWT token
+2. Use the token in Authorization header: "Bearer {token}"
+3. Access admin endpoints with the JWT token
+4. Logout using POST /api/auth/logout when done
+
+POSTMAN SETUP:
+1. Create a new collection called "Telco CRM Admin API"
+2. For login endpoint: POST /api/auth/login with JSON body
+3. After successful login, copy the token from response
+4. For all admin endpoints, add Authorization header: "Bearer {token}"
+5. Use logout endpoint to clear the session
+
+AUTHENTICATION HEADERS:
+For all protected endpoints (except /api/auth/login and /api/auth/logout):
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTYzNzU5MjQwMCwiZXhwIjoxNjM3Njc4ODAwfQ.signature
+
+SAMPLE RESPONSES:
+
+Login Response:
+{
+  "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTYzNzU5MjQwMCwiZXhwIjoxNjM3Njc4ODAwfQ.signature",
+  "type": "Bearer",
+  "message": "Login successful",
+  "username": "admin",
+  "authorities": [{"authority": "ROLE_ADMIN"}]
+}
+
+Dashboard Response:
+{
+  "totalUsers": 1,
+  "totalPackages": 3,
+  "activePackages": 3
+}
+
+User Response:
+{
+  "id": 1,
+  "username": "admin",
+  "email": "admin@telco.com",
+  "fullName": "System Administrator",
+  "role": "ADMIN",
+  "enabled": true
+}
+
+Package Response:
+{
+  "id": 1,
+  "name": "Basic",
+  "description": "Basic mobile package with limited features",
+  "price": 29.99,
+  "dataLimitGB": 5,
+  "voiceMinutes": 500,
+  "smsCount": 100,
+  "active": true,
+  "createdAt": "2025-11-22T09:15:00",
+  "updatedAt": "2025-11-22T09:15:00"
+}
+
+ERROR RESPONSES:
+401 Unauthorized: {"error": "Invalid username or password"}
+403 Forbidden: {"message": "Access denied"}
+404 Not Found: {"message": "Resource not found"}
+400 Bad Request: {"message": "Username already exists"}
