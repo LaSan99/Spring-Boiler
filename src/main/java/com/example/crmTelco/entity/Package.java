@@ -36,6 +36,14 @@ public class Package {
     @Column(nullable = false)
     private Integer smsCount;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "package_type", nullable = false)
+    private PackageType packageType;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
     @Column(nullable = false)
     private boolean active = true;
 
@@ -45,10 +53,33 @@ public class Package {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "start_date")
+    private LocalDateTime startDate;
+
+    @Column(name = "end_date")
+    private LocalDateTime endDate;
+
+    public enum PackageType {
+        PREPAID, POSTPAID
+    }
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        if (startDate == null) {
+            startDate = LocalDateTime.now();
+        }
+        // Set end date based on package type
+        if (endDate == null) {
+            if (packageType == PackageType.PREPAID) {
+                // Prepaid packages typically last 30 days
+                endDate = startDate.plusDays(30);
+            } else {
+                // Postpaid packages renew monthly, set to next month end
+                endDate = startDate.plusMonths(1);
+            }
+        }
     }
 
     @PreUpdate
@@ -134,5 +165,37 @@ public class Package {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public PackageType getPackageType() {
+        return packageType;
+    }
+
+    public void setPackageType(PackageType packageType) {
+        this.packageType = packageType;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public LocalDateTime getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDateTime startDate) {
+        this.startDate = startDate;
+    }
+
+    public LocalDateTime getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDateTime endDate) {
+        this.endDate = endDate;
     }
 }

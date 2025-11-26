@@ -1,7 +1,9 @@
 package com.example.crmTelco.service;
 
 import com.example.crmTelco.entity.Package;
+import com.example.crmTelco.entity.User;
 import com.example.crmTelco.repository.PackageRepository;
+import com.example.crmTelco.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,9 +15,11 @@ import java.util.Optional;
 public class PackageService {
 
     private final PackageRepository packageRepository;
+    private final UserRepository userRepository;
 
-    public PackageService(PackageRepository packageRepository) {
+    public PackageService(PackageRepository packageRepository, UserRepository userRepository) {
         this.packageRepository = packageRepository;
+        this.userRepository = userRepository;
     }
 
     public List<Package> getAllPackages() {
@@ -100,5 +104,47 @@ public class PackageService {
         return packageRepository.findAll().stream()
                 .filter(pkg -> pkg.getDataLimitGB() >= minDataGB)
                 .toList();
+    }
+
+    // User-specific package methods
+    public List<Package> getUserPackages(Long userId) {
+        return packageRepository.findByUserId(userId);
+    }
+
+    public List<Package> getUserActivePackages(Long userId) {
+        return packageRepository.findByUserIdAndActive(userId, true);
+    }
+
+    public List<Package> getUserPackagesByType(Long userId, Package.PackageType packageType) {
+        return packageRepository.findByUserIdAndPackageType(userId, packageType);
+    }
+
+    public Package createPackageForUser(Long userId, Package packageEntity) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+        
+        // Validate package type matches user category
+        if (packageEntity.getPackageType() != null && user.getCategory() != null) {
+            if ((packageEntity.getPackageType() == Package.PackageType.PREPAID && user.getCategory() != User.Category.PREPAID) ||
+                (packageEntity.getPackageType() == Package.PackageType.POSTPAID && user.getCategory() != User.Category.POSTPAID)) {
+                throw new RuntimeException("Package type must match user category. User is " + user.getCategory() + 
+                                         " but package is " + packageEntity.getPackageType());
+            }
+        }
+        
+        packageEntity.setUser(user);
+        packageEntity.setActive(true);
+        return packageRepository.save(packageEntity);
+    }
+
+    public Package createPackageForUserWithValidation(Long userId, Package packageEntity) {
+        // Generate unique package name if not provided
+        if (packageEntity.getName() == null || packageEntity.getName().trim().isEmpty()) {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+            packageEntity.setName(user.getUsername() + "_" + packageEntity.getPackageType() + "_" + System.currentTimeMillis());
+        }
+        
+        return createPackageForUser(userId, packageEntity);
     }
 }

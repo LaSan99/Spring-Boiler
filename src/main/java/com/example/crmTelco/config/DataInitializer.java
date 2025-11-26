@@ -15,8 +15,7 @@ import java.math.BigDecimal;
 public class DataInitializer {
 
     @Bean
-    public CommandLineRunner initData(UserRepository userRepository, 
-                                    PackageRepository packageRepository,
+    public CommandLineRunner initData(UserRepository userRepository,
                                     PasswordEncoder passwordEncoder) {
         return args -> {
             // Create admin user if not exists
@@ -67,41 +66,6 @@ public class DataInitializer {
                 userRepository.save(postpaidUser);
 
                 System.out.println("Sample users created");
-            }
-
-            // Create sample packages if none exist
-            if (packageRepository.count() == 0) {
-                Package basicPackage = new Package();
-                basicPackage.setName("Basic");
-                basicPackage.setDescription("Basic mobile package with limited features");
-                basicPackage.setPrice(new BigDecimal("29.99"));
-                basicPackage.setDataLimitGB(5);
-                basicPackage.setVoiceMinutes(500);
-                basicPackage.setSmsCount(100);
-                basicPackage.setActive(true);
-                packageRepository.save(basicPackage);
-
-                Package premiumPackage = new Package();
-                premiumPackage.setName("Premium");
-                premiumPackage.setDescription("Premium mobile package with extensive features");
-                premiumPackage.setPrice(new BigDecimal("59.99"));
-                premiumPackage.setDataLimitGB(50);
-                premiumPackage.setVoiceMinutes(2000);
-                premiumPackage.setSmsCount(500);
-                premiumPackage.setActive(true);
-                packageRepository.save(premiumPackage);
-
-                Package unlimitedPackage = new Package();
-                unlimitedPackage.setName("Unlimited");
-                unlimitedPackage.setDescription("Unlimited mobile package for heavy users");
-                unlimitedPackage.setPrice(new BigDecimal("99.99"));
-                unlimitedPackage.setDataLimitGB(999);
-                unlimitedPackage.setVoiceMinutes(9999);
-                unlimitedPackage.setSmsCount(9999);
-                unlimitedPackage.setActive(true);
-                packageRepository.save(unlimitedPackage);
-
-                System.out.println("Sample packages created");
             }
         };
     }
