@@ -60,6 +60,10 @@ public class AdminController {
                            @RequestParam String email,
                            @RequestParam String fullName,
                            @RequestParam String role,
+                           @RequestParam(required = false) String address,
+                           @RequestParam(required = false) String msisdn,
+                           @RequestParam String category,
+                           @RequestParam(required = false) String contactDetails,
                            RedirectAttributes redirectAttributes) {
         
         if (userRepository.existsByUsername(username)) {
@@ -72,6 +76,11 @@ public class AdminController {
             return "redirect:/admin/users";
         }
         
+        if (msisdn != null && userRepository.existsByMsisdn(msisdn)) {
+            redirectAttributes.addFlashAttribute("error", "MSISDN already exists");
+            return "redirect:/admin/users";
+        }
+        
         User user = new User();
         user.setUsername(username);
         user.setPassword(password); // Note: In production, encode this password
@@ -79,6 +88,10 @@ public class AdminController {
         user.setFullName(fullName);
         user.setRole(User.Role.valueOf(role.toUpperCase()));
         user.setEnabled(true);
+        user.setAddress(address);
+        user.setMsisdn(msisdn);
+        user.setCategory(User.Category.valueOf(category.toUpperCase()));
+        user.setContactDetails(contactDetails);
         
         userRepository.save(user);
         redirectAttributes.addFlashAttribute("success", "User created successfully");

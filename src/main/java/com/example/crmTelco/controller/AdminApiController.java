@@ -145,4 +145,32 @@ public class AdminApiController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @GetMapping("/users/category/{category}")
+    public ResponseEntity<List<User>> getUsersByCategory(@PathVariable String category) {
+        try {
+            User.Category cat = User.Category.valueOf(category.toUpperCase());
+            return ResponseEntity.ok(userService.getUsersByCategory(cat));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/users/role/{role}/category/{category}")
+    public ResponseEntity<List<User>> getUsersByRoleAndCategory(@PathVariable String role, @PathVariable String category) {
+        try {
+            User.Role r = User.Role.valueOf(role.toUpperCase());
+            User.Category cat = User.Category.valueOf(category.toUpperCase());
+            return ResponseEntity.ok(userService.getUsersByRoleAndCategory(r, cat));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/users/msisdn/{msisdn}")
+    public ResponseEntity<User> getUserByMsisdn(@PathVariable String msisdn) {
+        return userService.getUserByMsisdn(msisdn)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 }

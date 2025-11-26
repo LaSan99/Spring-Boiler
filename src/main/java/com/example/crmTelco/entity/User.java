@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
@@ -41,6 +42,22 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private boolean enabled = true;
 
+    @Column(name = "address")
+    private String address;
+
+    @Column(name = "msisdn", unique = true, nullable = false)
+    private String msisdn;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "category", nullable = false)
+    private Category category;
+
+    @Column(name = "contact_details")
+    private String contactDetails;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
@@ -68,6 +85,10 @@ public class User implements UserDetails {
 
     public enum Role {
         USER, ADMIN
+    }
+
+    public enum Category {
+        PREPAID, POSTPAID
     }
 
     public Long getId() {
@@ -122,5 +143,61 @@ public class User implements UserDetails {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getMsisdn() {
+        return msisdn;
+    }
+
+    public void setMsisdn(String msisdn) {
+        this.msisdn = msisdn;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public String getContactDetails() {
+        return contactDetails;
+    }
+
+    public void setContactDetails(String contactDetails) {
+        this.contactDetails = contactDetails;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        if (msisdn == null || msisdn.isEmpty()) {
+            msisdn = generateMSISDN();
+        }
+    }
+
+    private String generateMSISDN() {
+        // Generate MSISDN with country code and random digits
+        // Format: +94XXXXXXXXX (Sri Lanka format)
+        String countryCode = "+94";
+        String randomDigits = String.format("%09d", (long)(Math.random() * 1000000000L));
+        return countryCode + randomDigits;
     }
 }

@@ -46,6 +46,10 @@ public class UserService {
             throw new RuntimeException("Email already exists: " + user.getEmail());
         }
         
+        if (user.getMsisdn() != null && userRepository.existsByMsisdn(user.getMsisdn())) {
+            throw new RuntimeException("MSISDN already exists: " + user.getMsisdn());
+        }
+        
         // Encode password before saving
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setEnabled(true);
@@ -67,10 +71,19 @@ public class UserService {
             throw new RuntimeException("Email already exists: " + userDetails.getEmail());
         }
         
+        if (userDetails.getMsisdn() != null && !user.getMsisdn().equals(userDetails.getMsisdn()) && 
+            userRepository.existsByMsisdn(userDetails.getMsisdn())) {
+            throw new RuntimeException("MSISDN already exists: " + userDetails.getMsisdn());
+        }
+        
         user.setUsername(userDetails.getUsername());
         user.setEmail(userDetails.getEmail());
         user.setFullName(userDetails.getFullName());
         user.setRole(userDetails.getRole());
+        user.setAddress(userDetails.getAddress());
+        user.setMsisdn(userDetails.getMsisdn());
+        user.setCategory(userDetails.getCategory());
+        user.setContactDetails(userDetails.getContactDetails());
         
         // Only update password if provided
         if (userDetails.getPassword() != null && !userDetails.getPassword().trim().isEmpty()) {
@@ -109,5 +122,17 @@ public class UserService {
         return userRepository.findAll().stream()
                 .filter(User::isEnabled)
                 .toList();
+    }
+
+    public List<User> getUsersByCategory(User.Category category) {
+        return userRepository.findByCategory(category);
+    }
+
+    public List<User> getUsersByRoleAndCategory(User.Role role, User.Category category) {
+        return userRepository.findByRoleAndCategory(role, category);
+    }
+
+    public Optional<User> getUserByMsisdn(String msisdn) {
+        return userRepository.findByMsisdn(msisdn);
     }
 }
