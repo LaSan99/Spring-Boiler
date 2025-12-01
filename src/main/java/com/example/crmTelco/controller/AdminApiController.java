@@ -2,8 +2,10 @@ package com.example.crmTelco.controller;
 
 import com.example.crmTelco.entity.User;
 import com.example.crmTelco.entity.Package;
+import com.example.crmTelco.entity.Inquiry;
 import com.example.crmTelco.service.UserService;
 import com.example.crmTelco.service.PackageService;
+import com.example.crmTelco.service.InquiryService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -20,10 +22,12 @@ public class AdminApiController {
 
     private final UserService userService;
     private final PackageService packageService;
+    private final InquiryService inquiryService;
 
-    public AdminApiController(UserService userService, PackageService packageService) {
+    public AdminApiController(UserService userService, PackageService packageService, InquiryService inquiryService) {
         this.userService = userService;
         this.packageService = packageService;
+        this.inquiryService = inquiryService;
     }
 
     @GetMapping("/dashboard")
@@ -32,6 +36,8 @@ public class AdminApiController {
         stats.put("totalUsers", userService.getTotalUsersCount());
         stats.put("totalPackages", packageService.getTotalPackagesCount());
         stats.put("activePackages", packageService.getActivePackagesCount());
+        stats.put("totalInquiries", inquiryService.getTotalInquiriesCount());
+        stats.put("pendingInquiries", inquiryService.getInquiriesCountByStatus(Inquiry.InquiryStatus.PENDING));
         return ResponseEntity.ok(stats);
     }
 
@@ -172,5 +178,98 @@ public class AdminApiController {
         return userService.getUserByMsisdn(msisdn)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    // Inquiry endpoints
+    @GetMapping("/inquiries")
+    public ResponseEntity<List<Inquiry>> getAllInquiries() {
+        return ResponseEntity.ok(inquiryService.getAllInquiries());
+    }
+
+    @GetMapping("/inquiries/{id}")
+    public ResponseEntity<Inquiry> getInquiryById(@PathVariable Long id) {
+        return inquiryService.getInquiryById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/inquiries")
+    public ResponseEntity<?> createInquiry(@RequestBody Inquiry inquiry) {
+        try {
+            Inquiry createdInquiry = inquiryService.createInquiry(inquiry);
+            return ResponseEntity.ok(createdInquiry);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/inquiries/{id}")
+    public ResponseEntity<?> updateInquiry(@PathVariable Long id, @RequestBody Inquiry inquiryDetails) {
+        try {
+            Inquiry updatedInquiry = inquiryService.updateInquiry(id, inquiryDetails);
+            return ResponseEntity.ok(updatedInquiry);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/inquiries/{id}/status")
+    public ResponseEntity<?> updateInquiryStatus(@PathVariable Long id, @RequestBody Map<String, String> statusMap) {
+        try {
+            Inquiry updatedInquiry = inquiryService.updateInquiryStatus(id, statusMap.get("status"));
+            return ResponseEntity.ok("Inquiry status updated successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/inquiries/{id}/respond")
+    public ResponseEntity<?> respondToInquiry(@PathVariable Long id, @RequestBody Map<String, String> responseMap) {
+        try {
+            Inquiry updatedInquiry = inquiryService.respondToInquiry(id, responseMap.get("response"));
+            return ResponseEntity.ok("Response sent successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/inquiries/{id}")
+    public ResponseEntity<?> deleteInquiry(@PathVariable Long id) {
+        try {
+            inquiryService.deleteInquiry(id);
+            return ResponseEntity.ok("Inquiry deleted successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/inquiries/user/{userId}")
+    public ResponseEntity<List<Inquiry>> getInquiriesByUserId(@PathVariable Long userId) {
+        return ResponseEntity.ok(inquiryService.getInquiriesByUserId(userId));
+    }
+
+    @GetMapping("/inquiries/status/{status}")
+    public ResponseEntity<List<Inquiry>> getInquiriesByStatus(@PathVariable String status) {
+        try {
+            Inquiry.InquiryStatus inquiryStatus = Inquiry.InquiryStatus.valueOf(status.toUpperCase());
+            return ResponseEntity.ok(inquiryService.getInquiriesByStatus(inquiryStatus));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/inquiries/type/{type}")
+    public ResponseEntity<List<Inquiry>> getInquiriesByType(@PathVariable String type) {
+        try {
+            Inquiry.InquiryType inquiryType = Inquiry.InquiryType.valueOf(type.toUpperCase());
+            return ResponseEntity.ok(inquiryService.getInquiriesByType(inquiryType));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/inquiries/pending")
+    public ResponseEntity<List<Inquiry>> getPendingInquiries() {
+        return ResponseEntity.ok(inquiryService.getPendingInquiries());
     }
 }
