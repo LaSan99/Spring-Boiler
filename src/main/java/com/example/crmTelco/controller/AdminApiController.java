@@ -77,7 +77,7 @@ public class AdminApiController {
     public ResponseEntity<?> toggleUserStatus(@PathVariable Long id) {
         try {
             User user = userService.toggleUserStatus(id);
-            return ResponseEntity.ok("User status updated successfully");
+            return ResponseEntity.ok(user);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -217,7 +217,7 @@ public class AdminApiController {
     public ResponseEntity<?> updateInquiryStatus(@PathVariable Long id, @RequestBody Map<String, String> statusMap) {
         try {
             Inquiry updatedInquiry = inquiryService.updateInquiryStatus(id, statusMap.get("status"));
-            return ResponseEntity.ok("Inquiry status updated successfully");
+            return ResponseEntity.ok(updatedInquiry);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -227,7 +227,7 @@ public class AdminApiController {
     public ResponseEntity<?> respondToInquiry(@PathVariable Long id, @RequestBody Map<String, String> responseMap) {
         try {
             Inquiry updatedInquiry = inquiryService.respondToInquiry(id, responseMap.get("response"));
-            return ResponseEntity.ok("Response sent successfully");
+            return ResponseEntity.ok(updatedInquiry);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
