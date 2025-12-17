@@ -59,8 +59,19 @@ public class Package {
     @Column(name = "end_date")
     private LocalDateTime endDate;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_status", nullable = false)
+    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
+
+    @Column(name = "invoice_number")
+    private String invoiceNumber;
+
     public enum PackageType {
         PREPAID, POSTPAID
+    }
+
+    public enum PaymentStatus {
+        PENDING, PAID
     }
 
     @PrePersist
@@ -69,6 +80,10 @@ public class Package {
         updatedAt = LocalDateTime.now();
         if (startDate == null) {
             startDate = LocalDateTime.now();
+        }
+        // Generate invoice number
+        if (invoiceNumber == null) {
+            invoiceNumber = generateInvoiceNumber();
         }
         // Set end date based on package type
         if (endDate == null) {
@@ -197,5 +212,26 @@ public class Package {
 
     public void setEndDate(LocalDateTime endDate) {
         this.endDate = endDate;
+    }
+
+    public PaymentStatus getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(PaymentStatus paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
+    public String getInvoiceNumber() {
+        return invoiceNumber;
+    }
+
+    public void setInvoiceNumber(String invoiceNumber) {
+        this.invoiceNumber = invoiceNumber;
+    }
+
+    private String generateInvoiceNumber() {
+        // Generate invoice number with prefix and timestamp
+        return "INV-" + System.currentTimeMillis();
     }
 }

@@ -147,4 +147,12 @@ public class PackageService {
         
         return createPackageForUser(userId, packageEntity);
     }
+
+    public Package updatePaymentStatus(Long packageId, Package.PaymentStatus status) {
+        Package packageEntity = packageRepository.findById(packageId)
+                .orElseThrow(() -> new RuntimeException("Package not found with id: " + packageId));
+        
+        packageEntity.setPaymentStatus(status);
+        return packageRepository.save(packageEntity);
+    }
 }
